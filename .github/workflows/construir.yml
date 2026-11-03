@@ -1,0 +1,30 @@
+name: Construir app de widgets
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -o proyecto.zip -d .
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - run: gradle assembleDebug --no-daemon --stacktrace -PvCode=${{ github.run_number }}
+        working-directory: proyecto
+      - run: cp proyecto/app/build/outputs/apk/debug/app-debug.apk DokiMimoWidgets.apk
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Widgets Doki y Mimo v${{ github.run_number }}
+          body: "Descarga DokiMimoWidgets.apk desde tu celular o tablet e instálalo."
+          files: DokiMimoWidgets.apk
+          make_latest: true
